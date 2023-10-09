@@ -1,0 +1,123 @@
+---
+program_config:
+
+...
+
+---
+
+slave_name: somanet_node
+
+slave_count: 1
+
+slave_tags:
+  - masa_motor
+
+alias: 
+
+position:
+
+vendor_id:
+
+product_code:
+
+domain_name:
+
+dc_config:
+  assign_activate:
+  sync0_activate:
+  sync0_shift:
+  sync1_activate:
+  sync1_shift:
+
+sync_manager_config:
+  -
+    index:
+    direction:
+    watchdog_mode:
+  -
+    index:
+    direction:
+    watchdog_mode:
+  -
+    index:
+    direction:
+    watchdog_mode:
+  -
+    index:
+    direction:
+    watchdog_mode:
+
+pdo_mapping_1:
+ addr: 0x1600
+ type: rx
+
+ pdos:
+  -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+  -
+    name: a
+    index: b
+    subindex: c
+    bitlength: d
+    type: e
+
+pdo_mapping_2:
+ addr: 0x1601
+ type: rx
+
+ pdos:
+  -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+  -
+    name: a
+    index: b
+    subindex: c
+    bitlength: d
+    type: e
+
+pdo_mapping_3:
+ addr: 0x1a00
+ type: rx
+
+ pdos:
+  -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+  -
+    name: a
+    index: b
+    subindex: c
+    bitlength: d
+    type: e
+
+pdo_mapping_4:
+ addr: 0x1a01
+ type: rx
+
+ pdos:
+  -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+  -
+    name: a
+    index: b
+    subindex: c
+    bitlength: d
+    type: e
+
+...
+

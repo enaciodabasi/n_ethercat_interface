@@ -1,0 +1,32 @@
+---
+pdos:
+
+ - 
+    -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+    -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+
+ - 
+    -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+    -
+      name: a
+      index: b
+      subindex: c
+      bitlength: d
+      type: e
+
+...
