@@ -16,6 +16,11 @@ CommunicationInterface::CommunicationInterface()
 
 }
 
+CommunicationInterface::~CommunicationInterface()
+{
+    
+}
+
 void CommunicationInterface::setSharedDataPtr(SharedData& shared_data_ptr)
 {
     m_SharedDataPtr = shared_data_ptr;

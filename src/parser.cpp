@@ -109,13 +109,14 @@ namespace ec
 
             constexpr uint16_t maxNumOfPdoMappings = 8;
             
-            std::string pdoMappingYamlNodeName = "pdo_mapping_"; 
+            std::string pdoMappingYamlNodeName = "pdo_mapping_";
+             
             for(uint16_t pdoMappingIter = 1; pdoMappingIter <= maxNumOfPdoMappings; pdoMappingIter++)
             {
                 pdoMappingYamlNodeName += std::to_string(pdoMappingIter);
 
                 if(YAML::Node pdoMappingNode = slave_node[pdoMappingYamlNodeName]){
-                    uint16_t address = pdoMappingNode["address"].as<uint16_t>();
+                    uint16_t address = pdoMappingNode["addr"].as<uint16_t>();
                     std::string pdoType = pdoMappingNode["type"].as<std::string>();
                     PDO pdo;
                     pdo.pdoAddress = address;

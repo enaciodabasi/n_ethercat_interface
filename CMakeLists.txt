@@ -54,3 +54,5 @@ install(
     TARGETS ${PROJECT_NAME}
     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PROJECT_NAME}
 )
+
+add_subdirectory(test ${CMAKE_CURRENT_SOURCE_DIR}/build/test)

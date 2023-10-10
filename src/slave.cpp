@@ -99,37 +99,10 @@ namespace ec
             
         }
 
-        /* bool Driver::init(ec_master_t* master_ptr, ec_domain_t* domain_ptr)
+        Driver::~Driver()
         {
 
-            if(!createSlaveConfigPtr(master_ptr)){
-                return false;
-            }
-
-            if(!configurePDOs()){
-                return false;
-            }
-
-            if(!createSlaveSyncManagerConfig()){
-                return false;
-            }
-
-            uint numSyncs = 0;
-            if(m_SlaveInfo.syncManagerConfig.size() == 4){
-                numSyncs = EC_END;
-            }
-            else{
-                if(m_SlaveInfo.syncManagerConfig.size() < 4)
-                numSyncs = m_SlaveInfo.syncManagerConfig.size();
-            }
-            
-            if(ecrt_slave_config_pdos(m_SlaveConfigPtr, numSyncs, m_SyncManagerConfig) != 0){
-                return false;
-            }
-
-            
-            return true;
-        } */
+        }
 
         bool Slave::configurePDOs()
         {
@@ -227,6 +200,27 @@ namespace ec
 
         }
 
+        IO::IO(const SlaveInfo& slave_info)
+            : Slave(slave_info)
+        {
+
+        }
+
+        IO::~IO()
+        {
+
+        }
+
+        PLC::PLC(const SlaveInfo& slave_info)
+            : Slave(slave_info)
+        {
+
+        }
+
+        PLC::~PLC()
+        {
+            
+        }
 
         Coupler::Coupler(const SlaveInfo& slave_info)
             : Slave(slave_info)

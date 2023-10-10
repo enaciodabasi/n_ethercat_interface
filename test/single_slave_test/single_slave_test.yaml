@@ -1,6 +1,8 @@
 ---
 program_config:
 
+
+
 ...
 
 ---
@@ -9,43 +11,45 @@ slave_name: somanet_node
 
 slave_count: 1
 
+slave_type: driver
+
 slave_tags:
   - masa_motor
 
-alias: 
+alias: 0
 
-position:
+position: 0
+ 
+vendor_id: 0x10
 
-vendor_id:
-
-product_code:
-
-domain_name:
+product_code: 0x11
+ 
+domain_name: wheel_domain
 
 dc_config:
-  assign_activate:
-  sync0_activate:
-  sync0_shift:
-  sync1_activate:
-  sync1_shift:
+  assign_activate: 0
+  sync0_activate: 0
+  sync0_shift: 0
+  sync1_activate: 0
+  sync1_shift: 0
 
 sync_manager_config:
   -
-    index:
-    direction:
-    watchdog_mode:
+    index: 0
+    direction: input
+    watchdog_mode: disabled
   -
-    index:
-    direction:
-    watchdog_mode:
+    index: 1
+    direction: output
+    watchdog_mode: disabled
   -
-    index:
-    direction:
-    watchdog_mode:
+    index: 2
+    direction: input
+    watchdog_mode: disabled
   -
-    index:
-    direction:
-    watchdog_mode:
+    index: 3
+    direction: output
+    watchdog_mode: disabled
 
 pdo_mapping_1:
  addr: 0x1600
@@ -54,15 +58,15 @@ pdo_mapping_1:
  pdos:
   -
       name: a
-      index: b
-      subindex: c
-      bitlength: d
+      index: 0
+      subindex: 0
+      bitlength: 16
       type: e
   -
     name: a
-    index: b
-    subindex: c
-    bitlength: d
+    index: 0
+    subindex: 0
+    bitlength: 16
     type: e
 
 pdo_mapping_2:
@@ -72,51 +76,51 @@ pdo_mapping_2:
  pdos:
   -
       name: a
-      index: b
-      subindex: c
-      bitlength: d
+      index: 0
+      subindex: 0
+      bitlength: 16
       type: e
   -
     name: a
-    index: b
-    subindex: c
-    bitlength: d
+    index: 0
+    subindex: 0
+    bitlength: 16
     type: e
 
 pdo_mapping_3:
  addr: 0x1a00
- type: rx
+ type: tx
 
  pdos:
   -
       name: a
-      index: b
-      subindex: c
-      bitlength: d
+      index: 0
+      subindex: 0
+      bitlength: 16
       type: e
   -
     name: a
-    index: b
-    subindex: c
-    bitlength: d
+    index: 0
+    subindex: 0
+    bitlength: 16
     type: e
 
 pdo_mapping_4:
  addr: 0x1a01
- type: rx
+ type: tx
 
  pdos:
   -
       name: a
-      index: b
-      subindex: c
-      bitlength: d
+      index: 0
+      subindex: 0
+      bitlength: 16
       type: e
   -
     name: a
-    index: b
-    subindex: c
-    bitlength: d
+    index: 0
+    subindex: 0
+    bitlength: 16
     type: e
 
 ...
