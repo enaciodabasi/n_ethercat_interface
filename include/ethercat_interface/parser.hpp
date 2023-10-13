@@ -17,6 +17,7 @@
 #include <vector>
 #include <optional>
 #include <iostream>
+#include <variant>
 
 #include <yaml-cpp/yaml.h>
 
@@ -25,7 +26,9 @@
 namespace ec
 {
     namespace parser
-    {   
+    {
+
+        using SlaveInformation = std::variant<SlaveInfo, std::vector<SlaveInfo>>;    
         
         // Contains constexpr definitions for making some parsing operations easier.
         namespace
@@ -57,7 +60,7 @@ namespace ec
          * @param slave_node YAML node that is not a program or startup(?) node. 
          * @return std::optional<SlaveInfo> if any crucial configuration is not found returns a nullopt
          */
-        std::optional<SlaveInfo> parseSlaveConfig(const YAML::Node& slave_node);
+        std::optional<SlaveInformation> parseSlaveConfig(const YAML::Node& slave_node);
 
         /**
          * @brief Parses the .yaml configuration file specified in the path_to_config_file parameter

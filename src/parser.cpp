@@ -31,18 +31,33 @@ namespace ec
                     continue;
                 }
                 
-                auto inf = parseSlaveConfig(doc);
-                if(inf){
-                    pConf.slaveConfigurations.emplace_back(std::move(inf.value()));
+                auto slaveInformationOpt = parseSlaveConfig(doc);
+                if(slaveInformationOpt){
+                    const auto slaveInformation = slaveInformationOpt.value();
+                    if(std::holds_alternative<std::vector<SlaveInfo>>(slaveInformation)){
+                        const auto& slaveInfoVec = std::get<std::vector<SlaveInfo>>(slaveInformation);
+                        for(auto slaveInfoIter= slaveInfoVec.cbegin(); slaveInfoIter != slaveInfoVec.cend(); slaveInfoIter++)
+                        {
+                            pConf.slaveConfigurations.push_back(std::move(*slaveInfoIter));
+                        }   
+                    }
+                    else if(std::holds_alternative<SlaveInfo>(slaveInformation)){
+                        pConf.slaveConfigurations.push_back(std::move(
+                            std::get<SlaveInfo>(slaveInformation)
+                        ));
+                    }
                 }
+
             }
 
             return pConf;
         }
 
-        std::optional<SlaveInfo> parseSlaveConfig(const YAML::Node& slave_node)
+        std::optional<SlaveInformation> parseSlaveConfig(const YAML::Node& slave_node)
         {
             SlaveInfo slaveInfo;
+
+            uint16_t slaveCount = slave_node["slave_count"].as<uint16_t>();
 
             slaveInfo.slaveName = slave_node["slave_name"].as<std::string>();
             
@@ -154,78 +169,30 @@ namespace ec
                     break;
                 }
             }
-            /* if(const YAML::Node& pdos_node = slave_node["pdos"]){
-
-                std::vector<PDO> rxPDOs;
-                std::vector<PDO> txPDOs;
-
-                std::unique_ptr<PDO> tempPDO;
-                for(const YAML::Node& pdo_info : pdos_node)
-                {
-                    if(const auto& pdoAddress = pdo_info["address"]){
-                        if(tempPDO){
-                            if(tempPDO->pdoType == PDO_Type::RxPDO){
-                                PDO pdo = *tempPDO;
-                                rxPDOs.push_back(pdo);
-                            }
-                            else if(tempPDO->pdoType == PDO_Type::TxPDO){
-                                PDO pdo = *tempPDO;
-                                txPDOs.push_back(pdo);
-                            }
-                            tempPDO.reset();        
-                        }
-                        tempPDO = std::make_unique<PDO>();
-                        tempPDO->pdoAddress = pdoAddress.as<uint16_t>();
-
-                        const std::string pdoTypeStr = pdo_info["pdo_type"].as<std::string>();
-                        if(pdoTypeStr == "rx"){
-                            tempPDO->pdoType = PDO_Type::RxPDO;
-                        }
-                        else if(pdoTypeStr == "tx"){
-                            tempPDO->pdoType = PDO_Type::TxPDO;
-                            
-                        }
-                        continue; 
-                    }
-
-                    PDO_Entry entry;
-                    entry.entryName = pdo_info["name"].as<std::string>();
-                    entry.index = pdo_info["index"].as<uint16_t>();
-                    entry.subindex = pdo_info["subindex"].as<uint8_t>();
-                    entry.bitlength = pdo_info["bitlength"].as<uint8_t>();
-
-                    entry.type = [&pdo_info]() -> DataType {
-                        const std::string typeStr = pdo_info["type"].as<std::string>();
-                        const auto typeFound = dataTypes.find(typeStr);
-                        if(typeFound == dataTypes.end()){
-                            return DataType::UNKNOWN;
-                        }
-
-                        return typeFound->second;
-                    }();
-
-                    if(tempPDO){
-                        tempPDO->entries.push_back(entry);
-                    }
-                    
-                }
-                if(tempPDO){
-                    if(tempPDO){
-                    if(tempPDO->pdoType == PDO_Type::RxPDO){
-                        PDO pdo = *tempPDO;
-                        rxPDOs.push_back(pdo);
-                    }
-                    else if(tempPDO->pdoType == PDO_Type::TxPDO){
-                        PDO pdo = *tempPDO;
-                        txPDOs.push_back(pdo);
-                    }
-                    tempPDO.reset();        
-                }
-                }
-                slaveInfo.rxPDOs = rxPDOs;
-                slaveInfo.txPDOs = txPDOs;
-            } */
             
+            if(slaveCount > 1){
+                const auto slaveTags = slave_node["slave_tags"].as<std::vector<std::string>>();
+                std::vector<SlaveInfo> multipleSlaveInformation;
+                int slavePosition = slaveInfo.position - 1;
+                for(std::vector<std::string>::const_iterator slaveTagIter = slaveTags.cbegin(); slaveTagIter != slaveTags.cend(); slaveTagIter++)
+                {  
+                    // Override the slave name with the tag given in the config file
+                    SlaveInfo currInfo = slaveInfo;
+                    currInfo.slaveName = *slaveTagIter;
+                    // Increment the position of the slaves in the bus.
+                    currInfo.position = slavePosition + 1;
+                    slavePosition += 1;
+                    // Leave the rest of the parameters untouched
+                    multipleSlaveInformation.push_back(currInfo);
+                } 
+
+                if(slaveTags.size() != multipleSlaveInformation.size()){
+                    return std::nullopt;
+                }
+                
+                return multipleSlaveInformation;
+            }
+
             return slaveInfo;
 
         }

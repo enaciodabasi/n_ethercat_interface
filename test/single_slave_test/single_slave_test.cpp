@@ -42,8 +42,8 @@ TEST_F(SingleSlaveTest, IsParseSuccessful)
 
     EXPECT_EQ(txPdoCount, 2);
 
-    conf.slaveConfigurations.at(0).toString();
-
+    std::cout << conf.slaveConfigurations.at(0).toString() << std::endl;
+    
 }
 }
 int main(int argc, char** argv)
