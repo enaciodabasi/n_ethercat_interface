@@ -15,7 +15,7 @@
 #include <optional>
 #include <unordered_map>
 
-#include <data.hpp>
+#include "data.hpp"
 #include "ec_common_defs.hpp"
 
 namespace ec
@@ -94,17 +94,14 @@ namespace ec
                     return false;
                 }
 
-                unsigned int entryOffset = entryQuery->second;
+                unsigned int entryOffset = entryQueryOffset->second;
 
                 uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;    
 
                 return this->writeToEtherCAT(dataInPtr, value);
 
             }
-
-            template<typename T>
-            bool writeToEtherCAT(uint8_t* point_to_write, T value);
-
+    
             template<typename T>
             std::optional<T> read(const std::string& entry_name)
             {
@@ -115,22 +112,12 @@ namespace ec
                     return false;
                 }
 
-                unsigned int entryOffset = entryQuery->second;
+                unsigned int entryOffset = entryQueryOffset->second;
 
                 uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;
 
-                return this->readFromEtherCAT(dataInPtr);
+                return this->readFromEtherCAT<T>(dataInPtr);
             }
-
-            /**
-             * @brief Helper function to deduce the requested data type and call the appropriate EC_READ macro.
-             * 
-             * @tparam T 
-             * @param entry_name 
-             * @return std::optional<T> 
-             */
-            template<typename T>
-            std::optional<T> readFromEtherCAT(const std::string& entry_name);
             
             /**
              * @brief Return the slave information struct stored inside the slave object.
@@ -214,6 +201,19 @@ namespace ec
              * @return false otherwise.
              */
             bool setSharedDataMap(std::shared_ptr<data::DataMap>& data_map_shared_ptr);
+
+            template<typename T>
+            bool writeToEtherCAT(uint8_t* point_to_write, T value);
+
+             /**
+             * @brief Helper function to deduce the requested data type and call the appropriate EC_READ macro.
+             * 
+             * @tparam T 
+             * @param entry_name 
+             * @return std::optional<T> 
+             */
+            template<typename T>
+            std::optional<T> readFromEtherCAT(const std::string& entry_name);
 
             uint8_t* m_DomainDataPtr = nullptr;
             

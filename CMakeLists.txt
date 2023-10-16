@@ -56,3 +56,5 @@ install(
 )
 
 add_subdirectory(test ${CMAKE_CURRENT_SOURCE_DIR}/build/test)
+
+add_subdirectory(examples ${CMAKE_CURRENT_SOURCE_DIR}/build/examples)

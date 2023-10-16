@@ -133,8 +133,8 @@ void Master::update()
 
     if(m_UpdateFunction){
         
-        if(1){
-
+        if(m_CommunicationInterface){
+            
         }
 
         m_UpdateFunction();

@@ -48,6 +48,8 @@ namespace ec
             if(ecrt_slave_config_pdos(m_SlaveConfigPtr, numSyncs, m_SyncManagerConfig) != 0){
                 return false;
             }
+
+            return true;
         }
 
         bool Slave::createSlaveConfigPtr(ec_master_t* master)
@@ -91,6 +93,8 @@ namespace ec
                 (unsigned int)m_TxMappings.size(),
                 m_TxPDOs
             };
+
+            return true;
         }
 
         Driver::Driver(const SlaveInfo& slave_info)
@@ -197,6 +201,8 @@ namespace ec
             // Put in a check for the number of PDOs
             // If it's 0 => Use default mappning (How?)            
 
+            return true;
+
         }
         // TOOD: Unit test for shared data init.
         bool Slave::setSharedDataMap(std::shared_ptr<data::DataMap>& data_map_shared_ptr)
@@ -223,7 +229,7 @@ namespace ec
             bool entrySizeSumCheck = [&]() -> bool{
                 std::size_t entrySizeInMappings = 0;
                 std::size_t entrySizeInAppendedVector = pdoEntries.size();
-                for(auto& const mapping : pdoMappings){
+                for(const auto& mapping : pdoMappings){
                     entrySizeInMappings += mapping.entries.size();
                 }
 
@@ -275,6 +281,8 @@ namespace ec
             if(!createSlaveConfigPtr(master_ptr)){
                 return false;
             }
+
+            return true;
         }
 
     } // End of namespace slave

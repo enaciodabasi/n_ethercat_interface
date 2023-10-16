@@ -23,15 +23,15 @@ class CommunicationInterface
 
     CommunicationInterface();
     
-    void setSharedDataPtr(SharedData& shared_data_ptr);
-
     virtual ~CommunicationInterface();
+
+    void setSharedDataPtr(SharedData& shared_data_ptr);
 
     virtual bool init() = 0; 
 
     virtual void run() = 0;
 
-    private:
+    protected:
 
     SharedData m_SharedDataPtr;
 
