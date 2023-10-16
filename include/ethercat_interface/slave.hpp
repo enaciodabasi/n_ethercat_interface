@@ -12,8 +12,10 @@
 #ifndef SLAVE_HPP_
 #define SLAVE_HPP_
 
+#include <optional>
 #include <unordered_map>
 
+#include <data.hpp>
 #include "ec_common_defs.hpp"
 
 namespace ec
@@ -27,10 +29,24 @@ namespace ec
         {      
             public:
 
+            /**
+             * @brief Default constructor.
+             * 
+             */
             Slave(){};
             
+            /**
+             * @brief Constructor that sets the slave information
+             * 
+             * @param slave_info : SlaveInfo struct parsed by the master via parser.cpp
+             */
             Slave(const SlaveInfo& slave_info);
-
+            
+            /**
+             * @brief Move constructor.
+             * 
+             * @param s 
+             */
             Slave(Slave&& s) noexcept
                 : 
                     m_SlaveConfigPtr(nullptr),
@@ -66,6 +82,61 @@ namespace ec
             virtual bool init(ec_master_t* master_ptr, ec_domain_t* domain_ptr = nullptr);
             /* virtual bool init(ec_master_t* master_ptr); */
 
+            template<typename T>
+            bool write(
+                const std::string& entry_name,
+                T value
+            )
+            {
+                auto entryQueryOffset = m_Offsets.find(entry_name);
+        
+                if(entryQueryOffset == m_Offsets.end()){
+                    return false;
+                }
+
+                unsigned int entryOffset = entryQuery->second;
+
+                uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;    
+
+                return this->writeToEtherCAT(dataInPtr, value);
+
+            }
+
+            template<typename T>
+            bool writeToEtherCAT(uint8_t* point_to_write, T value);
+
+            template<typename T>
+            std::optional<T> read(const std::string& entry_name)
+            {
+
+                auto entryQueryOffset = m_Offsets.find(entry_name);
+        
+                if(entryQueryOffset == m_Offsets.end()){
+                    return false;
+                }
+
+                unsigned int entryOffset = entryQuery->second;
+
+                uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;
+
+                return this->readFromEtherCAT(dataInPtr);
+            }
+
+            /**
+             * @brief Helper function to deduce the requested data type and call the appropriate EC_READ macro.
+             * 
+             * @tparam T 
+             * @param entry_name 
+             * @return std::optional<T> 
+             */
+            template<typename T>
+            std::optional<T> readFromEtherCAT(const std::string& entry_name);
+            
+            /**
+             * @brief Return the slave information struct stored inside the slave object.
+             * 
+             * @return const SlaveInfo 
+             */
             const SlaveInfo getSlaveInfo() const
             {
                 return m_SlaveInfo;
@@ -82,6 +153,16 @@ namespace ec
             }
 
             bool configurePDOs();
+            
+            /**
+             * @brief Sets member variable pointer to the pointer to the EtherCAT domain.
+             * 
+             * @param domain_data_ptr 
+             */
+            void setDomainDataPtr(uint8_t* domain_data_ptr)
+            {
+                m_DomainDataPtr = domain_data_ptr;
+            }
 
             protected: // Protected member variables
 
@@ -117,13 +198,174 @@ namespace ec
 
             std::unordered_map<std::string, uint> m_Offsets;
 
+            std::shared_ptr<data::DataMap> m_SharedDataMap;
+
             protected: // Protected member functions
 
             virtual bool createSlaveConfigPtr(ec_master_t* master_ptr);
 
             virtual bool createSlaveSyncManagerConfig();
+
+            /**
+             * @brief Sets and initializes the m_SharedDataMap object, must be called after calling the init function of the slave object.
+             * 
+             * @param data_map_shared_ptr 
+             * @return true If all PDO's are set.
+             * @return false otherwise.
+             */
+            bool setSharedDataMap(std::shared_ptr<data::DataMap>& data_map_shared_ptr);
+
+            uint8_t* m_DomainDataPtr = nullptr;
             
         };
+        
+        template<typename T>
+        bool Slave::writeToEtherCAT(uint8_t* point_to_write, T value)
+        {
+             if constexpr (std::is_same_v<uint8_t, T>)
+            {
+               EC_WRITE_U8(
+                    point_to_write,
+                    value
+               ); 
+            }
+            else if constexpr (std::is_same_v<uint16_t, T>)
+            {
+                EC_WRITE_U16(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<uint32_t, T>)
+            {
+                EC_WRITE_U32(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<uint64_t, T>)
+            {
+                EC_WRITE_U64(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int8_t, T>)
+            {
+                EC_WRITE_S8(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int16_t, T>)
+            {
+                EC_WRITE_S16(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int32_t, T>)
+            {
+                EC_WRITE_S32(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int64_t, T>)
+            {
+                EC_WRITE_S64(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<float, T>)
+            {
+                EC_WRITE_REAL(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<double, T>)
+            {
+                EC_WRITE_LREAL(
+                    point_to_write,
+                    value
+                );
+            }
+            else
+            {
+               return false;
+            }
+            
+            return true;
+        }
+
+        template<typename T>
+        std::optional<T> readFromEtherCAT(uint8_t* point_to_read_from)
+        {
+            if constexpr (std::is_same_v<uint8_t, T>)
+            {
+               return EC_READ_U8(
+                    point_to_read_from
+               ); 
+            }
+            else if constexpr (std::is_same_v<uint16_t, T>)
+            {
+                return EC_READ_U16(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<uint32_t, T>)
+            {
+                return EC_READ_U32(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<uint64_t, T>)
+            {
+                return EC_READ_U64(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int8_t, T>)
+            {
+                return EC_READ_S8(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int16_t, T>)
+            {
+                return EC_READ_S16(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int32_t, T>)
+            {
+                return EC_READ_S32(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int64_t, T>)
+            {
+                return EC_READ_S64(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<float, T>)
+            {
+                return EC_READ_REAL(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<double, T>)
+            {
+                return EC_READ_LREAL(
+                    point_to_read_from
+                );
+            }
+
+            return std::nullopt;
+        }
 
         /**
          * @brief Represents the motor driver slaves. Inherits from the base Slave class.
@@ -147,8 +389,8 @@ namespace ec
              */
             /* bool init(ec_master_t* master_ptr, ec_domain_t* domain_ptr = nullptr) override; */
 
-            bool configurePDOs();
-            
+/*             bool configurePDOs();
+ */            
             
         };
 

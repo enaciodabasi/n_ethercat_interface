@@ -24,7 +24,12 @@
 
 using namespace ec::slave;
 
-typedef std::shared_ptr<std::map<std::string, std::shared_ptr<ec::data::DataMap>>> SharedData;
+/**
+ * @brief 
+ * 
+ */
+using SharedData = std::shared_ptr<std::map<std::string, std::shared_ptr<ec::data::DataMap>>>;
+
 typedef std::map<std::string, Slave*> Slaves;
 
 using CommunicationInterfacePtr = CommunicationInterface*;
@@ -65,6 +70,12 @@ class Master
 
     ~Master();
 
+    /**
+     * @brief Initializes the EtherCAT master with the given program and slave configurations.
+     * 
+     * @return true If no error occurs
+     * @return false otherwise
+     */
     bool init();
 
     void update();
@@ -79,36 +90,55 @@ class Master
     void setCommunicationInterface(CommunicationInterface* interface);
 
     /**
-     * @brief 
+     * @brief Get the Slave object pointer in it's derived pointer format. 
+     * This enables to use the derived-slave spesific methods in the user code.
      * 
-     * @tparam T: any primitive data type 
-     * @param slave_name 
-     * @param data_name 
-     * @param val 
-     * @return true 
-     * @return false 
+     * @tparam T Type of the slave: Driver*, IO* etc.
+     * @param slave_name Name of the slave
+     * @return std::optional<T> 
      */
-    template<typename T>
-    bool write(const std::string& slave_name, const std::string& data_name, const T& val)
+    template<class T>
+    std::optional<T> getSlave(const std::string& slave_name)
     {
-        m_RegisteredSlaves.at(slave_name);
-        
-        return true;
-    }
-    
-    /**
-     * @brief 
-     * 
-     * @tparam T: any primitive data type 
-     * @param slave_name: Name of the slave to read from. 
-     * @param data_name: Name of the registered PDO entry to read.
-     * @return std::optional<T>, std::nullopt if any errors are occured, otherwise a T value. 
-     */
-    template<typename T>
-    std::optional<T> read(const std::string& slave_name, const std::string& data_name)
-    {
+        auto slaveExists = m_RegisteredSlaves.find(slave_name);
+        if(slaveExists == m_RegisteredSlaves.end()){
+            return std::nullopt;
+        }
 
+        return dynamic_cast<T>(slaveExists->second);
     }
+
+    ///**
+    // * @brief 
+    // * 
+    // * @tparam T: any primitive data type 
+    // * @param slave_name 
+    // * @param data_name 
+    // * @param val 
+    // * @return true 
+    // * @return false 
+    // */
+    //template<typename T>
+    //bool write(const std::string& slave_name, const std::string& data_name, const T& val)
+    //{
+    //    m_RegisteredSlaves.at(slave_name);
+    //    
+    //    return true;
+    //}
+    //
+    ///**
+    // * @brief 
+    // * 
+    // * @tparam T: any primitive data type 
+    // * @param slave_name: Name of the slave to read from. 
+    // * @param data_name: Name of the registered PDO entry to read.
+    // * @return std::optional<T>, std::nullopt if any errors are occured, otherwise a T value. 
+    // */
+    //template<typename T>
+    //std::optional<T> read(const std::string& slave_name, const std::string& data_name)
+    //{
+//
+    //}
 
     private:
 

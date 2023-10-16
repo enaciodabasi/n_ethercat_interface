@@ -194,10 +194,47 @@ namespace ec
                 m_TxPDOs[i].entries = m_RxMappings.at(i).second;
             }
 
-
             // Put in a check for the number of PDOs
             // If it's 0 => Use default mappning (How?)            
 
+        }
+        // TOOD: Unit test for shared data init.
+        bool Slave::setSharedDataMap(std::shared_ptr<data::DataMap>& data_map_shared_ptr)
+        {
+            m_SharedDataMap = data_map_shared_ptr;
+            
+            /**
+             * TODO: Make this operation less expensive.
+             * 
+             */
+
+            // Gather all PDO mappings in one vector:
+            auto pdoMappings = m_SlaveInfo.rxPDOs;
+            pdoMappings.insert(std::end(pdoMappings), std::begin(m_SlaveInfo.txPDOs), std::end(m_SlaveInfo.txPDOs));
+            
+            // Gather all PDO entries in one vector:
+            auto pdoEntries = pdoMappings.at(0).entries;    
+            for(std::vector<ec::PDO>::iterator mappingIter = pdoMappings.begin() + 1; mappingIter != pdoMappings.end(); mappingIter++)
+            {
+                pdoEntries.insert(std::end(pdoEntries), std::begin((*mappingIter).entries), std::end((*mappingIter).entries));
+            }
+
+            // Check if the original number of PDO entries is equal to the newly created vector of entries:
+            bool entrySizeSumCheck = [&]() -> bool{
+                std::size_t entrySizeInMappings = 0;
+                std::size_t entrySizeInAppendedVector = pdoEntries.size();
+                for(auto& const mapping : pdoMappings){
+                    entrySizeInMappings += mapping.entries.size();
+                }
+
+                return ((entrySizeInMappings == entrySizeInAppendedVector) ? true : false);
+            }();
+
+            if(!entrySizeSumCheck){
+                return false;
+            }
+
+            return m_SharedDataMap->init(pdoEntries);
         }
 
         IO::IO(const SlaveInfo& slave_info)
