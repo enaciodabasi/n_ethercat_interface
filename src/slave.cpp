@@ -28,13 +28,19 @@ namespace ec
                 return false;
             }
 
+            //std::cout << "Created slave configuration pointer" << std::endl;
+
             if(!configurePDOs()){
                 return false;
             }
 
+            //std::cout << "Configured PDOs" << std::endl;
+
             if(!createSlaveSyncManagerConfig()){
                 return false;
             }
+
+            //std::cout << "Created slave's sync manager config." << std::endl;
 
             uint numSyncs = 0;
             if(m_SlaveInfo.syncManagerConfig.size() == 4){
@@ -45,9 +51,12 @@ namespace ec
                 numSyncs = m_SlaveInfo.syncManagerConfig.size();
             }
             
-            if(ecrt_slave_config_pdos(m_SlaveConfigPtr, numSyncs, m_SyncManagerConfig) != 0){
+            if(ecrt_slave_config_pdos(m_SlaveConfigPtr, numSyncs, m_SyncManagerConfig)){
+                ////std::cout << "Can not configure Sync Manager\n";
                 return false;
             }
+
+            //std::cout << "Configured the sync manager" << std::endl;
 
             return true;
         }
@@ -63,7 +72,8 @@ namespace ec
         {
             const std::size_t syncManagerSize = m_SlaveInfo.syncManagerConfig.size();
             const auto syncManagerConfig = m_SlaveInfo.syncManagerConfig;
-            m_SyncManagerConfig = new ec_sync_info_t[syncManagerSize];
+            m_SyncManagerConfig = new ec_sync_info_t[syncManagerSize + 1];
+            m_SyncManagerConfig[4] = {0xff};
             m_SyncManagerConfig[0] = {
                 0,
                 syncManagerConfig.at(0).syncManagerDirection,
@@ -84,14 +94,17 @@ namespace ec
                 2,
                 syncManagerConfig.at(2).syncManagerDirection,
                 (unsigned int)m_RxMappings.size(),
-                m_RxPDOs
+                m_RxPDOs,
+                syncManagerConfig.at(2).watchdogMode
             };  
+            //std::cout << "Rx 0: " << m_TxMappings.size() << std::endl;
 
             m_SyncManagerConfig[3] = {
                 3,
                 syncManagerConfig.at(3).syncManagerDirection,
                 (unsigned int)m_TxMappings.size(),
-                m_TxPDOs
+                m_TxPDOs,
+                syncManagerConfig.at(3).watchdogMode
             };
 
             return true;
@@ -154,6 +167,9 @@ namespace ec
                         currEntry.subindex,
                         currEntry.bitlength
                     };
+
+                    ////std::cout << "Index: " << currEntry.index << "Subindex: " << (uint16_t)currEntry.subindex << "Bit Length: " << (uint16_t)currEntry.bitlength << std::endl;
+
                     // Add the PDO entry to the Offset map
                     m_Offsets.insert_or_assign(currEntry.entryName, uint());
                 }
@@ -161,9 +177,9 @@ namespace ec
                 // Save the mapping
                 m_RxMappings.push_back(mapping);
                 // Save the PDO mapping inside the ec_pdo_info_t pointer
-                m_RxPDOs[i].index = m_RxMappings.at(i).first;
+                m_RxPDOs[i].index = mapping.first;
                 m_RxPDOs[i].n_entries = (unsigned int)pdo.entries.size();
-                m_RxPDOs[i].entries = m_RxMappings.at(i).second;
+                m_RxPDOs[i].entries = mapping.second;
             }
 
             for(std::size_t i = 0; i < txPdoSize; i++)
@@ -186,6 +202,8 @@ namespace ec
                         currEntry.subindex,
                         currEntry.bitlength
                     };
+
+                    ////std::cout << "Index: " << currEntry.index << "Subindex: " << (uint16_t)currEntry.subindex << "Bit Length: " << (uint16_t)currEntry.bitlength << std::endl;
                     // Add the PDO entry to the Offset map
                     m_Offsets.insert_or_assign(currEntry.entryName, uint());
                 }
@@ -193,14 +211,14 @@ namespace ec
                 // Save the mapping
                 m_TxMappings.push_back(mapping);
                 // Save the PDO mapping inside the ec_pdo_info_t pointer
-                m_TxPDOs[i].index = m_RxMappings.at(i).first;
+                m_TxPDOs[i].index = mapping.first;
                 m_TxPDOs[i].n_entries = (unsigned int)pdo.entries.size();
-                m_TxPDOs[i].entries = m_RxMappings.at(i).second;
+                m_TxPDOs[i].entries = mapping.second;
             }
 
             // Put in a check for the number of PDOs
-            // If it's 0 => Use default mappning (How?)            
-
+            // If it's 0 => Use default mappning (How?)
+            
             return true;
 
         }

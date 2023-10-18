@@ -7,6 +7,8 @@ find_package(yaml-cpp REQUIRED)
 
 include_directories(${GTEST_INCLUDE_DIRS})
 
+set(ethercat_LIB /usr/local/lib/libethercat.so)
+
 #################################################
 # Different ways of finding the shared library
 #################################################
@@ -21,7 +23,7 @@ get_filename_component(PARENT_DIR ../ REALPATH)
 #message(STATUS ${PARENT_DIR})
 
 add_executable(single_slave_test single_slave_test/single_slave_test.cpp)
-target_link_libraries(single_slave_test libethercat_interface ${GTEST_LIBRARIES} ${YAML_CPP_LIBRARIES} pthread)
+target_link_libraries(single_slave_test libethercat_interface ${ethercat_LIB} ${GTEST_LIBRARIES} ${YAML_CPP_LIBRARIES} pthread)
 target_include_directories(single_slave_test PUBLIC ${PARENT_DIR}/include ${YAML_CPP_INCLUDE_DIRS})
 
 add_executable(multiple_identical_slaves_test multiple_identical_slaves_test/multiple_identical_slaves_test.cpp)

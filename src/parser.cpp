@@ -112,10 +112,10 @@ namespace ec
                 if(wd == "default"){
                     smConfig.watchdogMode = EC_WD_DEFAULT;
                 }
-                else if(wd == "enable"){
+                else if(wd == "enabled"){
                     smConfig.watchdogMode = EC_WD_ENABLE;
                 }
-                else if(wd == "disable"){
+                else if(wd == "disabled"){
                     smConfig.watchdogMode = EC_WD_DISABLE;
                 }
 

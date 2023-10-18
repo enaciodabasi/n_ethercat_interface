@@ -80,6 +80,11 @@ class Master
 
     void update();
 
+    /**
+     * @brief Sets the string that is used to fetch the configuration file
+     * 
+     * @param config_file_path Absolute path to the configuration file.
+     */
     inline void setConfigFilePath(const std::string& config_file_path)
     {
         m_PathToConfigurationFile = config_file_path;
@@ -106,6 +111,53 @@ class Master
         }
 
         return dynamic_cast<T>(slaveExists->second);
+    }
+
+    /**
+     * @brief Sets the specified data inside the shared data map
+     * 
+     * @tparam T Type of the data to be set
+     * @param slave_name Name of the slave to set the data for
+     * @param data_name Name of the data to be set
+     * @param data_value Value to be set
+     * @return true 
+     * @return false 
+     */
+    template<typename T>
+    bool setSharedData(
+        const std::string& slave_name,
+        const std::string& data_name, 
+        T data_value
+    )
+    {
+        if( auto slaveFound = m_SharedData->find(slave_name); 
+            slaveFound != m_SharedData->end()){
+            return slaveFound->second->set(data_name, data_value);
+        }
+        
+        return false;
+    }
+
+    /**
+     * @brief Gets the specified data from the shared data map
+     * 
+     * @tparam T Type of the data to get
+     * @param slave_name Name of the slave to get the data from
+     * @param data_name Name of the data to get
+     * @return const std::optional<T> 
+     */
+    template<typename T>
+    const std::optional<T> getSharedData(
+        const std::string& slave_name,
+        const std::string& data_name
+    )
+    {
+        if( auto slaveFound = m_SharedData->find(slave_name);
+            slaveFound != m_SharedData->end()){
+            return slaveFound->second->get<T>(data_name);
+        }
+
+        return std::nullopt;
     }
 
     ///**
@@ -163,7 +215,7 @@ class Master
 
     Slaves m_RegisteredSlaves;
 
-    SharedData m_SlaveData;
+    SharedData m_SharedData;
 
     ec::ProgramConfig m_ProgramConfiguration;
 

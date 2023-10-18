@@ -20,9 +20,9 @@ alias: 0
 
 position: 0
  
-vendor_id: 0x10
+vendor_id: 0x000022d2
 
-product_code: 0x11
+product_code: 0x00000201
  
 domain_name: wheel_domain
 
@@ -36,19 +36,19 @@ dc_config:
 sync_manager_config:
   -
     index: 0
-    direction: input
+    direction: output
     watchdog_mode: disabled
   -
     index: 1
-    direction: output
-    watchdog_mode: disabled
-  -
-    index: 2
     direction: input
     watchdog_mode: disabled
   -
-    index: 3
+    index: 2
     direction: output
+    watchdog_mode: enabled
+  -
+    index: 3
+    direction: input
     watchdog_mode: disabled
 
 pdo_mapping_1:
@@ -57,71 +57,94 @@ pdo_mapping_1:
 
  pdos:
   -
-      name: a
-      index: 0
-      subindex: 0
+      name: control_word
+      index: 0x6040
+      subindex: 0x0
       bitlength: 16
-      type: e
+      type: uint16
   -
-    name: a
-    index: 0
-    subindex: 0
-    bitlength: 16
-    type: e
+    name: op_mode
+    index: 0x6060
+    subindex: 0x0
+    bitlength: 8
+    type: uint8
+
+  -
+    name: target_position
+    index: 0x607A
+    subindex: 0x0
+    bitlength: 32
+    type: int32
+
+  -
+    name: target_velocity
+    index: 0x60FF
+    subindex: 0x0
+    bitlength: 32
+    type: int32
+
+
 
 pdo_mapping_2:
- addr: 0x1601
- type: rx
-
- pdos:
-  -
-      name: a
-      index: 0
-      subindex: 0
-      bitlength: 16
-      type: e
-  -
-    name: a
-    index: 0
-    subindex: 0
-    bitlength: 16
-    type: e
-
-pdo_mapping_3:
- addr: 0x1a00
+ addr: 0x1A00
  type: tx
 
  pdos:
   -
-      name: a
-      index: 0
+      name: status_word
+      index: 0x6041
       subindex: 0
       bitlength: 16
-      type: e
+      type: uint16
   -
-    name: a
-    index: 0
+    name: actual_position
+    index: 0x6064
     subindex: 0
-    bitlength: 16
-    type: e
-
-pdo_mapping_4:
- addr: 0x1a01
- type: tx
-
- pdos:
+    bitlength: 32
+    type: int32
+  
   -
-      name: a
-      index: 0
-      subindex: 0
-      bitlength: 16
-      type: e
-  -
-    name: a
-    index: 0
+    name: actual_velocity
+    index: 0x606c
     subindex: 0
-    bitlength: 16
-    type: e
+    bitlength: 32
+    type: int32
+
+# pdo_mapping_3:
+#  addr: 0x1a00
+#  type: tx
+
+#  pdos:
+#   -
+#       name: a
+#       index: 0
+#       subindex: 0
+#       bitlength: 16
+#       type: e
+#   -
+#     name: a
+#     index: 0
+#     subindex: 0
+#     bitlength: 16
+#     type: e
+
+# pdo_mapping_4:
+#  addr: 0x1a01
+#  type: tx
+
+#  pdos:
+#   -
+#       name: a
+#       index: 0
+#       subindex: 0
+#       bitlength: 16
+#       type: e
+#   -
+#     name: a
+#     index: 0
+#     subindex: 0
+#     bitlength: 16
+#     type: e
 
 ...
 

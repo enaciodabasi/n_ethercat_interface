@@ -13,6 +13,7 @@
 #define SLAVE_HPP_
 
 #include <optional>
+#include <iostream>
 #include <unordered_map>
 
 #include "data.hpp"
@@ -116,7 +117,7 @@ namespace ec
 
                 uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;
 
-                return this->readFromEtherCAT<T>(dataInPtr);
+                return this->readFromEtherCAT<T>(dataInPtr, entry_name);
             }
             
             /**
@@ -213,7 +214,7 @@ namespace ec
              * @return std::optional<T> 
              */
             template<typename T>
-            std::optional<T> readFromEtherCAT(const std::string& entry_name);
+            std::optional<T> readFromEtherCAT(uint8_t* point_to_read_from, const std::string& entry_name);
 
             uint8_t* m_DomainDataPtr = nullptr;
             

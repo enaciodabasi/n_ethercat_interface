@@ -26,7 +26,16 @@ Domain::~Domain()
 }
 
 bool Domain::registerPDOs()
-{
+{   
+    if(!domainEntries){
+        std::cout << "Domain entries is not initialized\n";
+        return false;
+    }
+
+    if(!domainPtr){
+        std::cout << "Domain pointer is not initialized\n";
+        return false;
+    }
     return ecrt_domain_reg_pdo_entry_list(domainPtr, domainEntries);
 }
 
@@ -45,6 +54,7 @@ Master::Master()
 }
 
 Master::Master(const std::string& config_file_path)
+    : m_PathToConfigurationFile(config_file_path)
 {
 
 }
@@ -52,21 +62,32 @@ Master::Master(const std::string& config_file_path)
 
 Master::~Master()
 {
-
+    ecrt_master_deactivate_slaves(m_MasterPtr);
+    ecrt_master_deactivate(m_MasterPtr);
 }
 
 bool Master::init()
 {
     bool initOK = true;
 
+    m_MasterPtr = ecrt_request_master(0);
+    if(!m_MasterPtr){
+        return false;
+    }
+    //std::cout << "Requested master\n";
+
     if(m_PathToConfigurationFile.empty()){
         return false;
     }
+
+    //std::cout << "Got config file\n";
 
     const auto programConfigOpt = ec::parser::parseConfigFile(m_PathToConfigurationFile);
     if(!programConfigOpt){
         return false;
     }
+
+    //std::cout << "Parsed config file\n";
 
     m_ProgramConfiguration = programConfigOpt.value();
 
@@ -79,22 +100,35 @@ bool Master::init()
         return false;
     }
 
+    //std::cout << "Registered slaves\n";
+
     initOK = createDomains();
     if(!initOK){
         return false;
     }
+
+    //std::cout << "Created domains\n";
 
     initOK = initSlaves();
     if(!initOK){
         return false;
     }
 
+    //std::cout << "Initialized slaves\n";
+
     initOK = registerDomainEntries();
+
+    //std::cout << "Registered domain entries\n";
 
     bool isRegisteringPDOsOk = true;
     for(auto& [name, domain] : m_Domains)
-    {
-        if(!domain.registerPDOs()){
+    {   
+        //std::cout << "Registering: " << name << std::endl;
+        if(!domain.domainPtr){
+            //std::cout << "Domain pointer is nullptr\n";
+            break;
+        }
+        if(domain.registerPDOs()){
             isRegisteringPDOsOk = false;
             break;
         }
@@ -104,6 +138,8 @@ bool Master::init()
         // LOG
         return isRegisteringPDOsOk;
     }
+
+    //std::cout << "Registered PDOs\n";
 
     if(ecrt_master_activate(m_MasterPtr) < 0){
         // LOG
@@ -123,6 +159,21 @@ bool Master::init()
         // LOG
         return creatingDomainDataOk;
     }
+
+    for(auto domainMapIter = m_Domains.begin(); domainMapIter != m_Domains.end(); domainMapIter++)
+    {
+        for(const auto& str : (*domainMapIter).second.domainSlaves)
+        {   
+            auto foundSlave = m_RegisteredSlaves.find(str);
+            if(foundSlave == m_RegisteredSlaves.end()){
+                continue;
+            }
+
+            (*foundSlave).second->setDomainDataPtr((*domainMapIter).second.domainDataPtr);
+        }
+    }
+
+    //std::cout << "Created domain data\n";
 
     return initOK;
 
@@ -224,6 +275,7 @@ bool Master::createDomains()
         const auto domainNameOfSlave = slave->getSlaveInfo().domainName;
         if(domainNameOfSlave.empty()){
             domainsCreated = false;
+            break;
         }
         
         // Check if domain exists
@@ -232,9 +284,11 @@ bool Master::createDomains()
             m_Domains[domainNameOfSlave] = Domain();
             auto& currentDomain = m_Domains.at(domainNameOfSlave);
             currentDomain.domainPtr = ecrt_master_create_domain(this->m_MasterPtr);
+            // Check domain pointer
             currentDomain.domainSlaves.push_back(name);
-        }
 
+            break;
+        }
         // If domain already exists, just add the slave name to its domainSlaves vector:
         auto& currentDomain = m_Domains.at(domainNameOfSlave);
         currentDomain.domainSlaves.push_back(name);
@@ -267,7 +321,17 @@ bool Master::registerDomainEntries()
         std::size_t domainSize = 0;
         for(std::vector<std::string>::const_iterator slaveNameIter = domainSlaves.cbegin(); slaveNameIter < domainSlaves.cend(); slaveNameIter++){
             const auto currentSlaveInfo = this->m_RegisteredSlaves.at(*slaveNameIter)->getSlaveInfo();
-            domainSize += (currentSlaveInfo.rxPDOs.size() + currentSlaveInfo.txPDOs.size());
+            
+            for(const auto& pdoMapping : currentSlaveInfo.rxPDOs)
+            {
+                domainSize += pdoMapping.entries.size();
+            }
+
+            for(const auto& pdoMapping : currentSlaveInfo.txPDOs)
+            {
+                domainSize += pdoMapping.entries.size();
+            }
+            //domainSize += (currentSlaveInfo.rxPDOs.size() + currentSlaveInfo.txPDOs.size());
         }
 
         return domainSize;
@@ -279,6 +343,7 @@ bool Master::registerDomainEntries()
     {
 
         std::size_t currentDomainEntrySize = deduceDomainSize(domain);
+        std::cout << "Number of PDOs to register for the domain: " << currentDomainEntrySize << std::endl;
         domain.domainEntries = new ec_pdo_entry_reg_t[currentDomainEntrySize + 1]; // Plus one is for the empty struct at the end of the pointer.
 
         std:size_t entryIteration = 0;
@@ -286,15 +351,16 @@ bool Master::registerDomainEntries()
         {
             auto& currentSlave = m_RegisteredSlaves.at(slaveName);
             const auto currentSlaveInfo = currentSlave->getSlaveInfo();
-
             for(const auto rxpdo : currentSlaveInfo.rxPDOs)
             {
                 for(const auto entry : rxpdo.entries)
                 {
+
                     auto entryOffsetPtr = currentSlave->getOffsetPtr(entry.entryName);
                     if(!entryOffsetPtr){
                         registerOK = false;
                         // LOG:
+                        std::cout << "Can't get offset\n";
                         break;
                     }
                     ec_pdo_entry_reg_t entryReg;
@@ -320,7 +386,7 @@ bool Master::registerDomainEntries()
             for(const auto txpdo : currentSlaveInfo.txPDOs)
             {
                 for(const auto entry : txpdo.entries)
-                {
+                {   
                     auto entryOffsetPtr = currentSlave->getOffsetPtr(entry.entryName);
                     if(!entryOffsetPtr){
                         registerOK = false;

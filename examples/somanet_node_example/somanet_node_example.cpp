@@ -37,7 +37,10 @@ int main(int argc, char** argv)
 {
 
     std::unique_ptr<Master> master = std::make_unique<Master>("");
-    bool masterInitOk = master->init();
+    if(!master->init()){
+        
+        return -1;
+    }
     auto updateFuncion = [&master](){
 
         auto optLeftMotor = master->getSlave<Driver*>("left_motor");
@@ -59,7 +62,11 @@ int main(int argc, char** argv)
                 // EtherCAT loop logic:
             // ******************************
 
-            
+            /* auto leftMotorVel = leftMotor->read<int32_t>("target_velocity");
+
+            if(leftMotorVel){
+                master->setSharedData("left_motor", "target_velocity", leftMotorVel.value());
+            } */
 
         }
 
@@ -67,5 +74,7 @@ int main(int argc, char** argv)
 
     master->setUpdateFunction(updateFuncion);
     master->update();
+
+    return 0;
 
 }
