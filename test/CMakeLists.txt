@@ -29,3 +29,7 @@ target_include_directories(single_slave_test PUBLIC ${PARENT_DIR}/include ${YAML
 add_executable(multiple_identical_slaves_test multiple_identical_slaves_test/multiple_identical_slaves_test.cpp)
 target_link_libraries(multiple_identical_slaves_test libethercat_interface ${GTEST_LIBRARIES} ${YAML_CPP_LIBRARIES} pthread)
 target_include_directories(multiple_identical_slaves_test PUBLIC ${PARENT_DIR}/include ${YAML_CPP_INCLUDE_DIRS})
+
+add_executable(timer_test timer_test/timer_test.cpp)
+target_link_libraries(timer_test libethercat_interface ${ethercat_LIB} pthread)
+target_include_directories(timer_test PUBLIC ${PARENT_DIR}/include)

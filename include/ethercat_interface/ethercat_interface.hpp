@@ -14,5 +14,6 @@
 
 #include "master.hpp"
 #include "comm_interface.hpp"
+#include "time_operations.hpp"
 
 #endif // ETHERCAT_INTERFACE_HPP_ 

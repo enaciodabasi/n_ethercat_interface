@@ -23,6 +23,8 @@ set(ethercat_LIBRARIES ${ETHERCAT_LIB_PATH})
 
 file(GLOB SOURCES src/*.cpp)
 
+
+
 include(GNUInstallDirs)
 
 add_library(

@@ -13,19 +13,20 @@
 #define TIME_OPERATIONS_HPP_
 
 #include <time.h>
+#include <string>
 #include <chrono>
-
+#include <thread>
+#include <functional>
+#include <atomic>
+#include <iostream>
 
 #include "ecrt.h"
 
-namespace time_operations
-{
+constexpr auto NanoSecPerSec = 1e+9; 
 
-    constexpr auto NanoSecPerSec = 1e+9; 
+std::timespec addTimespec(const std::timespec& t1, const std::timespec& t2);
 
-    std::timespec addTimespec(const std::timespec& t1, const std::timespec& t2);
-
-    const uint64_t timespectoNanoSec(const std::timespec& t);
+const uint64_t timespectoNanoSec(const std::timespec& t);
 
     enum ClockType : int
     {
@@ -69,6 +70,10 @@ namespace time_operations
 
         CyclicTaskTimerDC();
 
+        /* ~CyclicTaskTimerDC(){
+            
+        }; */
+
         /**
          * @brief Writes the application time to the EtherCAT master
          * 
@@ -90,7 +95,79 @@ namespace time_operations
         uint16_t m_SyncRefCounter = 0;
     };
 
+    class Timer
+    {
+        public:
+        Timer();
+        ~Timer();
+        std::atomic<bool> m_IsActive{true};
+        template<class Func, class... arguments>
+        void setCallback(double interval, Func&& callback_function, arguments&&... args);
+        private:
+    };
 
-}
+
+        struct MeasurementVars
+        {
+            uint64_t m_Period = 0;
+            uint64_t m_Exec = 0;
+            uint64_t m_Latency = 0;
+            
+            uint64_t m_MinPeriod = 0;
+            uint64_t m_MinExec = 0;
+            uint64_t m_MinLatency = 0;
+
+            uint64_t m_MaxPeriod = 0;
+            uint64_t m_MaxExec = 0;
+            uint64_t m_MaxLatency = 0;
+        };
+        
+        constexpr std::chrono::nanoseconds timespecToNanoSecDuration(const std::timespec& ts)
+        {   
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::move(std::chrono::seconds{ts.tv_sec} + std::chrono::nanoseconds{ts.tv_nsec})
+            );
+        }
+        struct TimeTracker
+        {
+            public:
+
+            TimeTracker();
+
+            //TimeTracker(double interval);
+
+            ~TimeTracker();
+
+            const MeasurementVars getMeasurementVars() const
+            {
+                return m_MeasurementVars;
+            }
+
+            void measureTimings(const std::timespec& wakeup_time_ts);
+        
+            void setWakeUpTime(const std::timespec& wakeup_time_ts);
+
+            void updateEndTime(){
+                m_EndTime = std::chrono::system_clock::now();
+            }
+
+            private:
+
+            MeasurementVars m_MeasurementVars;
+
+            std::chrono::time_point<std::chrono::system_clock> m_WakeUpTime;
+            std::chrono::time_point<std::chrono::system_clock> m_LastStartTime;
+            std::chrono::time_point<std::chrono::system_clock> m_EndTime;
+
+            constexpr std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> timeSpecToTimepoint(const std::timespec& ts)
+            {
+                return std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>(
+                    std::chrono::duration_cast<std::chrono::system_clock::duration>(
+                        timespecToNanoSecDuration(ts)
+                    )
+                );
+            } 
+        };
+
 
 #endif // TIME_OPERATIONS_HPP_
