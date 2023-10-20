@@ -58,6 +58,7 @@ int main(int argc, char** argv)
 
         while(true)
         {
+
             // ******************************
                 // EtherCAT loop logic:
             // ******************************
@@ -68,6 +69,10 @@ int main(int argc, char** argv)
                 master->setSharedData("left_motor", "target_velocity", leftMotorVel.value());
             } */
 
+            /* auto optTargetVel = master->getSharedData<int32_t>("left_motor", "target_velocity");
+            if(optTargetVel){
+                leftMotor->write("target_velocity", optTargetVel.value());
+            } */
         }
 
     };

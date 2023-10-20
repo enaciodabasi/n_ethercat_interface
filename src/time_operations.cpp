@@ -30,25 +30,32 @@ std::timespec addTimespec(const std::timespec& t1, const std::timespec& t2)
 }
 CyclicTaskTimer::CyclicTaskTimer()
 {
+
 }
+
 CyclicTaskTimer::CyclicTaskTimer(int64_t period_ns, ClockType clock_to_use)
     : m_PeriodNanoSec(period_ns), m_ClockToUse(clock_to_use)
 {
     m_CyclePeriod = std::timespec({0, m_PeriodNanoSec});
 }
+
 void CyclicTaskTimer::init()
 {
     clock_gettime(m_ClockToUse, &m_WakeupTime);
 }
+
 void CyclicTaskTimer::sleep()
 {   
     m_WakeupTime = addTimespec(m_WakeupTime, m_CyclePeriod);
     clock_nanosleep(m_ClockToUse, TIMER_ABSTIME, &m_WakeupTime, nullptr);
 }
+
 CyclicTaskTimerDC::CyclicTaskTimerDC()
     : CyclicTaskTimer()
 {
+
 }
+
 void CyclicTaskTimerDC::writeAppTimeToMaster(ec_master_t* master_ptr)
 {
     ecrt_master_application_time(
@@ -56,10 +63,12 @@ void CyclicTaskTimerDC::writeAppTimeToMaster(ec_master_t* master_ptr)
         timespectoNanoSec(m_WakeupTime)
     );
 }
+
 void CyclicTaskTimerDC::syncSlaveClocks(ec_master_t* master_ptr)
 {
     ecrt_master_sync_slave_clocks(master_ptr);
 }
+
 void CyclicTaskTimerDC::syncReferenceClock(ec_master_t* master_ptr)
 {
     if(m_SyncRefCounter != 0){
@@ -72,44 +81,33 @@ void CyclicTaskTimerDC::syncReferenceClock(ec_master_t* master_ptr)
         ecrt_master_sync_reference_clock_to(master_ptr, timespectoNanoSec(currentTime));
     }
 }
+
 const uint64_t timespectoNanoSec(const std::timespec& t)
 {
     return uint64_t((t.tv_sec * NanoSecPerSec) + t.tv_nsec);
 }
 
+/*
+---------------------------------------------
+---------------------------------------------
+---------------------------------------------
+Callback based timer class.
+---------------------------------------------
+---------------------------------------------
+---------------------------------------------
+*/
 Timer::Timer()
-{
+{   
 
 }
 
 Timer::~Timer()
 {
+    m_IsActive = false;
+}
 
-}
-template<class Func, class... arguments>
-void Timer::setCallback(double interval, Func&& callback_function, arguments&&... args)
-{
-    std::function<typename std::result_of<Func(arguments...)>::type()> task(
-        std::bind(
-            std::forward<Func>(callback_function), 
-            std::forward<arguments>(args)...
-        )
-    );
-    m_IsActive = true;
-    std::thread([interval, task, this](){
-        if(!m_IsActive.load()){
-            return;
-        }
-        std::this_thread::sleep_for(
-            std::chrono::nanoseconds(interval * NanoSecPerSec)
-        );
-        if(!m_IsActive.load()){
-            return;
-        }
-        task();
-    }).detach();
-    
-}
+/*
+*/
 
 TimeTracker::TimeTracker()
 {

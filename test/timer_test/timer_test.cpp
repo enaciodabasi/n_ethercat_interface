@@ -10,14 +10,45 @@
  */
 
 
-#include "ethercat_interface/ethercat_interface.hpp"
+#include "ethercat_interface/time_operations.hpp"
 
 #include <iostream>
+
+class TimerUser
+{
+    public:
+    TimerUser(){}
+    ~TimerUser(){}
+
+    void timerCallback(int* i)
+    {
+        (*i) += 10;
+    }    
+};
+
 
 int main(int argc, char** argv)
 {
 
-    TimeTracker tracker;
+    Timer sqtimer;
+    TimerUser user;
+    int count = 0;
+    sqtimer.start(1, &TimerUser::timerCallback, user, &count);
+    
+    /* timer.setCallback<>(1.0, &timerCallback); */
+    bool flag = true;
+    while(flag)
+    {   
+        if(count >= 10000){
+            flag = false;
+            break;
+        }
+        
+        std::cout << "Count: " << count << std::endl;
+    }
+
+    /* TimeTracker tracker;
+    
 
     bool flag = true;
     std::timespec wakeuptime;
@@ -37,10 +68,10 @@ int main(int argc, char** argv)
         tracker.measureTimings(wakeuptime);
 
         auto measurements = tracker.getMeasurementVars();
-
+        std::cout << measurements.m_Exec;
         tracker.updateEndTime();
         count += 1;
-    }
+    } */
 
     return 0;
 

@@ -22,7 +22,41 @@
 
 #include "ecrt.h"
 
-constexpr auto NanoSecPerSec = 1e+9; 
+constexpr int64_t NanoSecPerSec = 1e+9; 
+
+class Timer
+{
+    public:
+    Timer();
+    ~Timer();
+    std::atomic<bool> m_IsActive{true};
+    template<class Func, class... arguments>
+    void start(double interval, Func&& callback_function, arguments&&... args)
+    {
+        std::function<typename std::result_of<Func(arguments...)>::type()> task(
+            std::bind(
+                std::forward<Func>(callback_function), 
+                std::forward<arguments>(args)...
+            )
+        );
+        m_IsActive = true;
+        std::thread([interval, task, this](){
+            
+            while(m_IsActive.load())
+            {
+                std::this_thread::sleep_for(
+                    std::chrono::nanoseconds(int64_t(interval * NanoSecPerSec))
+                );
+                if(!m_IsActive.load()){
+                    return;
+                }
+                task();
+            }
+        }).detach();
+    }
+
+    private:
+};
 
 std::timespec addTimespec(const std::timespec& t1, const std::timespec& t2);
 
@@ -59,6 +93,8 @@ const uint64_t timespectoNanoSec(const std::timespec& t);
             ClockType clock_to_use = ClockType::Monotonic
         );
 
+        virtual ~CyclicTaskTimer();
+
         void init();
 
         void sleep();
@@ -69,6 +105,7 @@ const uint64_t timespectoNanoSec(const std::timespec& t);
         public:
 
         CyclicTaskTimerDC();
+        ~CyclicTaskTimerDC();
 
         /* ~CyclicTaskTimerDC(){
             
@@ -93,17 +130,6 @@ const uint64_t timespectoNanoSec(const std::timespec& t);
         private:
 
         uint16_t m_SyncRefCounter = 0;
-    };
-
-    class Timer
-    {
-        public:
-        Timer();
-        ~Timer();
-        std::atomic<bool> m_IsActive{true};
-        template<class Func, class... arguments>
-        void setCallback(double interval, Func&& callback_function, arguments&&... args);
-        private:
     };
 
 

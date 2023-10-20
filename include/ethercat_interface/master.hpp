@@ -21,6 +21,7 @@
 #include "comm_interface.hpp"
 #include "slave.hpp"
 #include "parser.hpp"
+#include "time_operations.hpp"
 
 using namespace ec::slave;
 
@@ -192,6 +193,14 @@ class Master
 //
     //}
 
+    void receive();
+
+    void send();
+
+    bool receiveDomainData(const std::string& domain_name);
+
+    bool sendDomainData(const std::string& domain_name);
+
     private:
 
     std::string m_PathToConfigurationFile;
@@ -218,6 +227,9 @@ class Master
     SharedData m_SharedData;
 
     ec::ProgramConfig m_ProgramConfiguration;
+    
+    std::unique_ptr<CyclicTaskTimer> m_TaskTimer;
+    bool m_IsDistributedClockEnabled = false;
 
     /**
      * @brief Register a slave in the map

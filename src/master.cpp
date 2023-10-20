@@ -91,6 +91,7 @@ bool Master::init()
 
     m_ProgramConfiguration = programConfigOpt.value();
 
+
     initOK = registerSlaves();
     if(!initOK){
         return false;
@@ -101,6 +102,27 @@ bool Master::init()
     }
 
     //std::cout << "Registered slaves\n";
+
+    bool isDcEnabledForAnyOfTheSlaves = [&slaves = m_ProgramConfiguration.slaveConfigurations]() -> bool {
+        bool res = false;
+        for(auto slaveIter = slaves.cbegin(); slaveIter != slaves.cend(); slaveIter++)
+        {
+            if((*slaveIter).distributedClockConfig != std::nullopt){
+                res = true;
+                break;
+            }
+        }
+        return res;
+    }();
+    
+    if(isDcEnabledForAnyOfTheSlaves){
+        m_IsDistributedClockEnabled = true;
+        m_TaskTimer = std::make_unique<CyclicTaskTimerDC>();
+    }
+    else if(m_ProgramConfiguration.cyclePeriod != 0){
+        m_TaskTimer = std::make_unique<CyclicTaskTimer>();
+    }
+
 
     initOK = createDomains();
     if(!initOK){
@@ -113,7 +135,7 @@ bool Master::init()
     if(!initOK){
         return false;
     }
-
+    
     //std::cout << "Initialized slaves\n";
 
     initOK = registerDomainEntries();
@@ -421,4 +443,54 @@ bool Master::registerDomainEntries()
     }
 
     return registerOK;
+}
+
+void Master::receive()
+{
+    if(m_IsDistributedClockEnabled){
+        CyclicTaskTimerDC* tempDcTimer = dynamic_cast<CyclicTaskTimerDC*>(m_TaskTimer.get());     
+        tempDcTimer->writeAppTimeToMaster(m_MasterPtr);
+        delete tempDcTimer;
+    }
+
+    ecrt_master_receive(m_MasterPtr);
+    
+}
+
+void Master::send()
+{
+    if(m_IsDistributedClockEnabled){
+        CyclicTaskTimerDC* tempDcTimer = dynamic_cast<CyclicTaskTimerDC*>(m_TaskTimer.get());
+        tempDcTimer->syncReferenceClock(m_MasterPtr);
+        tempDcTimer->syncSlaveClocks(m_MasterPtr);
+        delete tempDcTimer;
+    }
+
+    ecrt_master_send(m_MasterPtr);
+}
+
+bool Master::receiveDomainData(const std::string& domain_name)
+{
+    auto domainFound = m_Domains.find(domain_name);
+    if(domainFound == m_Domains.end()){
+        // TODO: Log
+        return false;
+    }
+
+    ecrt_domain_process(domainFound->second.domainPtr);
+
+    return true;
+}
+
+bool Master::sendDomainData(const std::string& domain_name)
+{
+    auto domainFound = m_Domains.find(domain_name);
+    if(domainFound == m_Domains.end()){
+        // TODO: Log
+        return false;
+    }
+
+    ecrt_domain_queue(domainFound->second.domainPtr);
+
+    return true;
 }
