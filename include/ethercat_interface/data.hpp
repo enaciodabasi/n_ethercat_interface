@@ -19,6 +19,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 
 #include "ec_common_defs.hpp"
 
@@ -28,6 +29,7 @@ namespace ec
     {
 
         typedef std::variant<
+            std::monostate,
             uint8_t,
             uint16_t,
             uint32_t,
@@ -53,38 +55,38 @@ namespace ec
             template<typename T>
             bool set(const T& val)
             {   
-                // If the queue is not empty, check the first element to validate the data type.
-                if(!m_DataQueue.empty()){
-                    const auto fVal = m_DataQueue.front();
-                    if(!std::holds_alternative<T>(fVal)){
-                        return false;
-                    }
+                
+                if(!std::holds_alternative<T>(m_Data)){ // If the value inside m_DataVar does not hold the same type as the template argument:
+                    return false;
                 }
-                m_DataQueue.push(val);
-
+            
+                m_Data = val;
+                
                 return true;
             }
 
             template<typename T>
-            std::optional<T> get()
-            {
-                if(m_DataQueue.empty()){
+            const std::optional<T> get() const
+            {   
+                //if(!std::holds_alternative<T>(m_Data.value())){
+                //    return std::nullopt;
+                //}
+//
+                //return std::get<T>(m_Data);
+
+                if(!std::holds_alternative<T>(m_Data)){
                     return std::nullopt;
                 }
+                
+                T data = std::get<T>(m_Data);
+                    
+                return data;
 
-                const auto val = m_DataQueue.front();
-                if(!std::holds_alternative<T>(val)){
-                    return std::nullopt;
-                }
-
-                m_DataQueue.pop();
-
-                return std::get<T>(val);
-            }
+            }   
 
             private:
             
-            std::queue<DataVar> m_DataQueue;
+            DataVar m_Data;
 
         };
 
@@ -140,12 +142,13 @@ namespace ec
                     return std::nullopt;
                 }
 
-                const std::optional<T> data = entry->second->get<T>();
-                if(!data){
-                    return std::nullopt;
+                std::optional<T> data;
+                if(m_DataShMutex.try_lock_shared()){
+                    data = entry->second->get<T>();
+                    m_DataShMutex.unlock_shared();
                 }
-
-                return data.value();
+            
+                return data;
 
             }
 
@@ -161,19 +164,30 @@ namespace ec
             template<typename T>
             bool set(const std::string& data_name, const T& val)
             {
+
                 const auto& entry = m_Data.find(data_name);
                 if(entry == m_Data.end()){
                     return false;
                 }
+                
+                bool setOp = false;
 
-                return entry->second->set<T>(val);
+                if(m_DataShMutex.try_lock()){
+                    setOp = entry->second->set<T>(val);   
+                    m_DataShMutex.unlock();
+                }
+                
+                return setOp;
             }
 
             private:
 
-            std::unordered_map<std::string, std::unique_ptr<Data>> m_Data;
+            std::unordered_map<std::string, std::shared_ptr<Data>> m_Data;
 
             std::vector<PDO_Entry> m_EntryInfoArr;
+
+            std::shared_mutex m_DataShMutex;
+            
 
         };
 

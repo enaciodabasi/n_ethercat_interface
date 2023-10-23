@@ -51,7 +51,7 @@ namespace ec
             for(std::size_t i = 0; i < numEntries; i++)
             {
                 const auto entry = entries.at(i);
-                m_Data[entry.entryName] = std::make_unique<Data>();
+                m_Data[entry.entryName] = std::make_shared<Data>();
             }
 
             return true;
