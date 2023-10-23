@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(test)
 set(CMAKE_CXX_STANDARD 17)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti")
 find_package(GTest REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
@@ -33,3 +33,7 @@ target_include_directories(multiple_identical_slaves_test PUBLIC ${PARENT_DIR}/i
 add_executable(timer_test timer_test/timer_test.cpp)
 target_link_libraries(timer_test libethercat_interface ${ethercat_LIB} pthread)
 target_include_directories(timer_test PUBLIC ${PARENT_DIR}/include)
+
+add_executable(shared_data_test shared_data_test/shared_data_test.cpp)
+target_link_libraries(shared_data_test libethercat_interface ${GTEST_LIBRARIES} ${YAML_CPP_LIBRARIES} pthread)
+target_include_directories(shared_data_test PUBLIC ${PARENT_DIR}/include)

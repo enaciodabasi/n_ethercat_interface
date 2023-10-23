@@ -28,6 +28,11 @@ namespace ec
             
         }
 
+        DataMap::DataMap()
+        {
+            
+        }
+
         DataMap::DataMap(const std::vector<PDO_Entry>& entries)
             : m_EntryInfoArr(entries)
         {
@@ -50,6 +55,16 @@ namespace ec
             }
 
             return true;
+        }
+
+        bool DataMap::init()
+        {
+            
+            if(m_EntryInfoArr.empty()){
+                return false;
+            }
+
+            return init(m_EntryInfoArr);
         }
         
 

@@ -63,17 +63,21 @@ int main(int argc, char** argv)
                 // EtherCAT loop logic:
             // ******************************
 
-            /* auto leftMotorVel = leftMotor->read<int32_t>("target_velocity");
+            auto leftMotorVel = leftMotor->read<int32_t>("target_velocity");
 
             if(leftMotorVel){
                 master->setSharedData("left_motor", "target_velocity", leftMotorVel.value());
-            } */
+            }
 
             /* auto optTargetVel = master->getSharedData<int32_t>("left_motor", "target_velocity");
             if(optTargetVel){
                 leftMotor->write("target_velocity", optTargetVel.value());
             } */
         }
+
+        delete leftMotor;
+        delete rightMotor;
+        delete lifterMotor;
 
     };
 

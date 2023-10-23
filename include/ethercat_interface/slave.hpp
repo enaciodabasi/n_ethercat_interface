@@ -84,6 +84,161 @@ namespace ec
             /* virtual bool init(ec_master_t* master_ptr); */
 
             template<typename T>
+            bool writeToEtherCAT(uint8_t* point_to_write, T value)
+            {
+             if constexpr (std::is_same_v<uint8_t, T>)
+            {
+               EC_WRITE_U8(
+                    point_to_write,
+                    value
+               ); 
+            }
+            else if constexpr (std::is_same_v<uint16_t, T>)
+            {
+                EC_WRITE_U16(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<uint32_t, T>)
+            {
+                EC_WRITE_U32(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<uint64_t, T>)
+            {
+                EC_WRITE_U64(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int8_t, T>)
+            {
+                EC_WRITE_S8(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int16_t, T>)
+            {
+                EC_WRITE_S16(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int32_t, T>)
+            {
+                EC_WRITE_S32(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<int64_t, T>)
+            {
+                EC_WRITE_S64(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<float, T>)
+            {
+                EC_WRITE_REAL(
+                    point_to_write,
+                    value
+                );
+            }
+            else if constexpr (std::is_same_v<double, T>)
+            {
+                EC_WRITE_LREAL(
+                    point_to_write,
+                    value
+                );
+            }
+            else
+            {
+               return false;
+            }
+            
+            return true;
+        }
+
+             /**
+             * @brief Helper function to deduce the requested data type and call the appropriate EC_READ macro.
+             * 
+             * @tparam T 
+             * @param entry_name 
+             * @return std::optional<T> 
+             */
+            template<typename T>
+        std::optional<T> readFromEtherCAT(uint8_t* point_to_read_from)
+        {
+            if constexpr (std::is_same_v<uint8_t, T>)
+            {
+               return EC_READ_U8(
+                    point_to_read_from
+               ); 
+            }
+            else if constexpr (std::is_same_v<uint16_t, T>)
+            {
+                return EC_READ_U16(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<uint32_t, T>)
+            {
+                return EC_READ_U32(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<uint64_t, T>)
+            {
+                return EC_READ_U64(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int8_t, T>)
+            {
+                return EC_READ_S8(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int16_t, T>)
+            {
+                return EC_READ_S16(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int32_t, T>)
+            {
+                return EC_READ_S32(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<int64_t, T>)
+            {
+                return EC_READ_S64(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<float, T>)
+            {
+                return EC_READ_REAL(
+                    point_to_read_from
+                );
+            }
+            else if constexpr (std::is_same_v<double, T>)
+            {
+                return EC_READ_LREAL(
+                    point_to_read_from
+                );
+            }
+
+            return std::nullopt;
+        }
+
+            template<typename T>
             bool write(
                 const std::string& entry_name,
                 T value
@@ -99,7 +254,7 @@ namespace ec
 
                 uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;    
 
-                return this->writeToEtherCAT(dataInPtr, value);
+                return this->writeToEtherCAT<T>(dataInPtr, value);
 
             }
     
@@ -117,7 +272,7 @@ namespace ec
 
                 uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;
 
-                return this->readFromEtherCAT<T>(dataInPtr, entry_name);
+                return this->readFromEtherCAT<T>(dataInPtr);
             }
             
             /**
@@ -203,24 +358,11 @@ namespace ec
              */
             bool setSharedDataMap(std::shared_ptr<data::DataMap>& data_map_shared_ptr);
 
-            template<typename T>
-            bool writeToEtherCAT(uint8_t* point_to_write, T value);
-
-             /**
-             * @brief Helper function to deduce the requested data type and call the appropriate EC_READ macro.
-             * 
-             * @tparam T 
-             * @param entry_name 
-             * @return std::optional<T> 
-             */
-            template<typename T>
-            std::optional<T> readFromEtherCAT(uint8_t* point_to_read_from, const std::string& entry_name);
-
             uint8_t* m_DomainDataPtr = nullptr;
             
         };
         
-        template<typename T>
+        /* template<typename T>
         bool Slave::writeToEtherCAT(uint8_t* point_to_write, T value)
         {
              if constexpr (std::is_same_v<uint8_t, T>)
@@ -299,9 +441,9 @@ namespace ec
             }
             
             return true;
-        }
+        } */
 
-        template<typename T>
+        /* template<typename T>
         std::optional<T> readFromEtherCAT(uint8_t* point_to_read_from)
         {
             if constexpr (std::is_same_v<uint8_t, T>)
@@ -366,7 +508,36 @@ namespace ec
             }
 
             return std::nullopt;
+        } */
+
+        /* template<typename T>
+        std::optional<T> Slave::read(const std::string& entry_name)
+        {
+            auto entryQueryOffset = m_Offsets.find(entry_name);
+    
+            if(entryQueryOffset == m_Offsets.end()){
+                return false;
+            }
+            unsigned int entryOffset = entryQueryOffset->second;
+            uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;
+            return readFromEtherCAT<T>(dataInPtr);
         }
+
+        template<typename T>
+        bool Slave::write(
+            const std::string& entry_name,
+            T value
+        )
+        {
+            auto entryQueryOffset = m_Offsets.find(entry_name);
+    
+            if(entryQueryOffset == m_Offsets.end()){
+                return false;
+            }
+            unsigned int entryOffset = entryQueryOffset->second;
+            uint8_t* dataInPtr = m_DomainDataPtr + entryOffset;    
+            return writeToEtherCAT<T>(dataInPtr, value);
+        } */
 
         /**
          * @brief Represents the motor driver slaves. Inherits from the base Slave class.

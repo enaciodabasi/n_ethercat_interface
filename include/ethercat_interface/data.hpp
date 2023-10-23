@@ -93,14 +93,47 @@ namespace ec
 
             public:
 
+            /**
+             * @brief Default constructor, the init function must be called with a PDO_Entry argument if this constructor is used.
+             * 
+             */
+            DataMap();
+
+            /**
+             * @brief Constructs a new DataMap with the given entries
+             * 
+             * @param entries A vector of PDO_Entry structs.
+             */
             DataMap(const std::vector<PDO_Entry>& entries);
 
             ~DataMap();
 
+            /**
+             * @brief 
+             * 
+             * @return true 
+             * @return false 
+             */
+            bool init();
+
+            /**
+             * @brief 
+             * 
+             * @param entries 
+             * @return true 
+             * @return false 
+             */
             bool init(const std::vector<PDO_Entry>& entries);
 
+            /**
+             * @brief 
+             * 
+             * @tparam T 
+             * @param data_name 
+             * @return std::optional<T> 
+             */
             template <typename T>
-            std::optional<T> get(std::string& data_name)
+            std::optional<T> get(const std::string& data_name)
             {
                 const auto& entry = m_Data.find(data_name);
                 if(entry == m_Data.end()){
@@ -116,6 +149,15 @@ namespace ec
 
             }
 
+            /**
+             * @brief 
+             * 
+             * @tparam T 
+             * @param data_name 
+             * @param val 
+             * @return true 
+             * @return false 
+             */
             template<typename T>
             bool set(const std::string& data_name, const T& val)
             {

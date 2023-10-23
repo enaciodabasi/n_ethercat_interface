@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(ethercat_interface VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -Wall")
 
 find_package(yaml-cpp REQUIRED)
 find_package(Boost REQUIRED)
@@ -21,9 +22,17 @@ set(ethercat_LIBRARIES ${ETHERCAT_LIB_PATH})
 #    src/comm_interface.cpp
 #)
 
-file(GLOB SOURCES src/*.cpp)
+#file(GLOB SOURCES src/*.cpp)
 
-
+set(
+    SOURCES
+    src/time_operations.cpp
+    src/slave.cpp
+    src/master.cpp
+    src/data.cpp
+    src/parser.cpp
+    src/comm_interface.cpp  
+)
 
 include(GNUInstallDirs)
 
@@ -56,7 +65,6 @@ install(
     TARGETS ${PROJECT_NAME}
     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/${PROJECT_NAME}
 )
-
 add_subdirectory(test ${CMAKE_CURRENT_SOURCE_DIR}/build/test)
 
 add_subdirectory(examples ${CMAKE_CURRENT_SOURCE_DIR}/build/examples)

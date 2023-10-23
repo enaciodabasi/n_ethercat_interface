@@ -74,8 +74,23 @@ const uint64_t timespectoNanoSec(const std::timespec& t);
      * @brief Helper struct to use in order to sync the loop to a frequency. 
      * 
      */
-    struct CyclicTaskTimer
-    {   
+    class CyclicTaskTimer
+    {       
+
+        public:
+
+        CyclicTaskTimer();
+        CyclicTaskTimer(
+            int64_t period_ns,
+            ClockType clock_to_use = ClockType::Monotonic
+        );
+
+        virtual void init();
+
+        virtual void sleep();
+
+        virtual ~CyclicTaskTimer(){};
+
         protected:
 
         int64_t m_PeriodNanoSec;
@@ -84,28 +99,18 @@ const uint64_t timespectoNanoSec(const std::timespec& t);
         std::timespec m_WakeupTime;
 
         int m_ClockToUse;
-
-        public:
-        
-        CyclicTaskTimer();
-        CyclicTaskTimer(
-            int64_t period_ns,
-            ClockType clock_to_use = ClockType::Monotonic
-        );
-
-        virtual ~CyclicTaskTimer();
-
-        void init();
-
-        void sleep();
     };
 
-    struct CyclicTaskTimerDC : public CyclicTaskTimer
+    class CyclicTaskTimerDC : public CyclicTaskTimer
     {
         public:
 
         CyclicTaskTimerDC();
-        ~CyclicTaskTimerDC();
+        CyclicTaskTimerDC(
+            int64_t period_ns,
+            ClockType clock_to_use = ClockType::Monotonic
+        );
+        ~CyclicTaskTimerDC() override;
 
         /* ~CyclicTaskTimerDC(){
             

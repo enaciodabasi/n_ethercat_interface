@@ -15,5 +15,8 @@
 #include "master.hpp"
 #include "comm_interface.hpp"
 #include "time_operations.hpp"
+#include "slave.hpp"
+#include "ethercat_interface/ec_common_defs.hpp"
+#include "data.hpp"
 
 #endif // ETHERCAT_INTERFACE_HPP_ 

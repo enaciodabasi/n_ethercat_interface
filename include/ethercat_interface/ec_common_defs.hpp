@@ -159,10 +159,10 @@ namespace ec
             str += "Vendor ID: " + std::to_string(vendorID) + " Product Code: " + std::to_string(productCode) + "\n";
             
             str += "RxPDOs: \n";
-            for(const auto rxPDO : rxPDOs)
+            for(const auto& rxPDO : rxPDOs)
             {
                 str += "PDO Mapping Address: " + std::to_string(rxPDO.pdoAddress) + "\n";
-                for(const auto entry : rxPDO.entries)
+                for(const auto& entry : rxPDO.entries)
                 {
                     str += "Entry name: " + entry.entryName +"\n";
                     str += "Index: " + std::to_string(entry.index) + " Subindex: " + std::to_string((uint16_t)entry.subindex) + " Bit length: " +  std::to_string((uint16_t)entry.bitlength) + "\n";

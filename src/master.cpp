@@ -375,7 +375,7 @@ bool Master::registerDomainEntries()
             const auto currentSlaveInfo = currentSlave->getSlaveInfo();
             for(const auto rxpdo : currentSlaveInfo.rxPDOs)
             {
-                for(const auto entry : rxpdo.entries)
+                for(const auto& entry : rxpdo.entries)
                 {
 
                     auto entryOffsetPtr = currentSlave->getOffsetPtr(entry.entryName);

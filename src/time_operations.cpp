@@ -39,6 +39,11 @@ CyclicTaskTimer::CyclicTaskTimer(int64_t period_ns, ClockType clock_to_use)
     m_CyclePeriod = std::timespec({0, m_PeriodNanoSec});
 }
 
+/* CyclicTaskTimer::~CyclicTaskTimer()
+{
+
+}
+ */
 void CyclicTaskTimer::init()
 {
     clock_gettime(m_ClockToUse, &m_WakeupTime);
@@ -52,6 +57,17 @@ void CyclicTaskTimer::sleep()
 
 CyclicTaskTimerDC::CyclicTaskTimerDC()
     : CyclicTaskTimer()
+{
+
+}
+
+CyclicTaskTimerDC::CyclicTaskTimerDC(int64_t period_ns, ClockType clock_to_use)
+    : CyclicTaskTimer(period_ns, clock_to_use)
+{
+
+}
+
+CyclicTaskTimerDC::~CyclicTaskTimerDC()
 {
 
 }
