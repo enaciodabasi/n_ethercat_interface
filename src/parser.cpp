@@ -31,9 +31,9 @@ namespace ec
                     continue;
                 }
                 
-                auto slaveInformationOpt = parseSlaveConfig(doc);
-                if(slaveInformationOpt){
-                    const auto slaveInformation = slaveInformationOpt.value();
+                auto slaveInformationExp = parseSlaveConfig(doc);
+                if(slaveInformationExp.has_value()){
+                    const auto slaveInformation = slaveInformationExp.value();
                     if(std::holds_alternative<std::vector<SlaveInfo>>(slaveInformation)){
                         const auto& slaveInfoVec = std::get<std::vector<SlaveInfo>>(slaveInformation);
                         for(auto slaveInfoIter= slaveInfoVec.cbegin(); slaveInfoIter != slaveInfoVec.cend(); slaveInfoIter++)
@@ -47,6 +47,10 @@ namespace ec
                         ));
                     }
                 }
+                else
+                {
+                  continue;
+                } 
 
             }
 
@@ -135,7 +139,7 @@ namespace ec
                     std::string pdoType = pdoMappingNode["type"].as<std::string>();
                     PDO pdo;
                     pdo.pdoAddress = address;
-                    for(const YAML::Node entry : pdoMappingNode["pdos"])
+                    for(const YAML::Node& entry : pdoMappingNode["pdos"])
                     {
                         PDO_Entry pdoEntry;
                         pdoEntry.entryName = entry["name"].as<std::string>();

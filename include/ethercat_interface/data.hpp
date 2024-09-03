@@ -55,8 +55,11 @@ namespace ec
             template<typename T>
             bool set(const T& val)
             {   
-                
-                if(!std::holds_alternative<T>(m_Data)){ // If the value inside m_DataVar does not hold the same type as the template argument:
+                if(std::holds_alternative<std::monostate>(m_Data)){
+                    m_Data = val;
+                    return true;
+                }
+                else if(!std::holds_alternative<T>(m_Data)){ // If the value inside m_DataVar does not hold the same type as the template argument:
                     return false;
                 }
             
@@ -66,7 +69,7 @@ namespace ec
             }
 
             template<typename T>
-            const std::optional<T> get() const
+            const std::optional<T> get()
             {   
                 //if(!std::holds_alternative<T>(m_Data.value())){
                 //    return std::nullopt;
@@ -79,6 +82,7 @@ namespace ec
                 }
                 
                 T data = std::get<T>(m_Data);
+                m_Data = std::monostate();
                     
                 return data;
 
@@ -141,7 +145,7 @@ namespace ec
                 if(entry == m_Data.end()){
                     return std::nullopt;
                 }
-
+                
                 std::optional<T> data;
                 if(m_DataShMutex.try_lock_shared()){
                     data = entry->second->get<T>();

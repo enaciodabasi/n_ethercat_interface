@@ -140,6 +140,34 @@ class Master
     }
 
     /**
+     * @brief Sets the specified data inside the shared data map
+     * 
+     * @tparam T Type of the data to be set
+     * @param slave_name Name of the slave to set the data for
+     * @param data_name Name of the data to be set
+     * @param data_value_opt std::optional object that might contain the data
+     * @return true 
+     * @return false 
+     */
+    template<typename T>
+    bool setSharedData(
+        const std::string& slave_name,
+        const std::string& data_name, 
+        const std::optional<T> data_value_opt
+    )
+    {
+        if(!data_value_opt){
+            return false;
+        }
+
+        return setSharedData<T>(
+            slave_name,
+            data_name,
+            data_value_opt.value()
+        );
+    }
+
+    /**
      * @brief Gets the specified data from the shared data map
      * 
      * @tparam T Type of the data to get

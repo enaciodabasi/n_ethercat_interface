@@ -52,6 +52,8 @@ namespace ec
             {
                 const auto entry = entries.at(i);
                 m_Data[entry.entryName] = std::make_shared<Data>();
+
+
             }
 
             return true;

@@ -369,7 +369,7 @@ bool Master::registerDomainEntries()
         domain.domainEntries = new ec_pdo_entry_reg_t[currentDomainEntrySize + 1]; // Plus one is for the empty struct at the end of the pointer.
 
         std:size_t entryIteration = 0;
-        for(const std::string slaveName : domain.domainSlaves)
+        for(const std::string& slaveName : domain.domainSlaves)
         {
             auto& currentSlave = m_RegisteredSlaves.at(slaveName);
             const auto currentSlaveInfo = currentSlave->getSlaveInfo();
@@ -381,8 +381,6 @@ bool Master::registerDomainEntries()
                     auto entryOffsetPtr = currentSlave->getOffsetPtr(entry.entryName);
                     if(!entryOffsetPtr){
                         registerOK = false;
-                        // LOG:
-                        std::cout << "Can't get offset\n";
                         break;
                     }
                     ec_pdo_entry_reg_t entryReg;
@@ -407,7 +405,7 @@ bool Master::registerDomainEntries()
 
             for(const auto txpdo : currentSlaveInfo.txPDOs)
             {
-                for(const auto entry : txpdo.entries)
+                for(const auto& entry : txpdo.entries)
                 {   
                     auto entryOffsetPtr = currentSlave->getOffsetPtr(entry.entryName);
                     if(!entryOffsetPtr){

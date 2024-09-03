@@ -41,7 +41,7 @@ TEST_F(MultipleIdenticalSlavesTest, IsParseSuccessful)
     EXPECT_EQ(conf.slaveConfigurations.at(1).position, 2);
     EXPECT_EQ(conf.slaveConfigurations.at(2).position, 3);
 
-    for(const auto currConf : conf.slaveConfigurations)
+    for(const auto& currConf : conf.slaveConfigurations)
     {
         std::cout << currConf.toString() << std::endl;
     }

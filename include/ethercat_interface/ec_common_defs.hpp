@@ -170,10 +170,10 @@ namespace ec
             }
 
             str += "TxPDOs: \n";
-            for(const auto txPDO : txPDOs)
+            for(const auto& txPDO : txPDOs)
             {
                 str += "PDO Mapping Address: " + std::to_string(txPDO.pdoAddress) + "\n";
-                for(const auto entry : txPDO.entries)
+                for(const auto& entry : txPDO.entries)
                 {
                     str += "Entry name: " + entry.entryName + "\n";
                     str += "Index: " + std::to_string(entry.index) + " Subindex: " + std::to_string((uint16_t)entry.subindex) + " Bit length: " + std::to_string((uint16_t)entry.bitlength) + "\n";

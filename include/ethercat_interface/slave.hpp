@@ -618,7 +618,8 @@ namespace ec
     } // End of namespace slave
 } // End of namespace ec
 
-
-
+using DriverPtr = ec::slave::Driver*;
+using IoPtr = ec::slave::IO*;
+using PlcPtr = ec::slave::PLC*;
 
 #endif // SLAVE_HPP_

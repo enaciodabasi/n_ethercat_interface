@@ -56,6 +56,9 @@ TEST_F(SharedDataTest, SameThreadDataTransferTest)
         std::cout << std::hex << "Written: " << ctrlWord << " | Read: " << writtenControlWord.value() << std::endl; 
     }
 
+    auto writtenControlWord2 = m_SharedDataMap->get<uint16_t>("control_word");
+    EXPECT_EQ(writtenControlWord2, std::nullopt);
+
     /* // Check if the pop operation on the Data Queue is successful.
     auto optCtrlWord = m_SharedDataMap->get<uint16_t>("control_word");
     EXPECT_EQ(optCtrlWord, std::nullopt); */
@@ -64,6 +67,39 @@ TEST_F(SharedDataTest, SameThreadDataTransferTest)
 
 TEST_F(SharedDataTest, MultipleThreadDataTransferTest)
 {
+
+    std::atomic<bool> runThread;
+    runThread.store(true);
+
+    auto threadFunc = [&runThread](std::shared_ptr<data::DataMap>& shMap){
+
+        auto threadMap = shMap;
+        int toIncrement = 0;
+        while(runThread.load())
+        {   
+            threadMap->set<int32_t>("target_velocity", toIncrement);
+
+            toIncrement += 1;
+        }
+    };
+
+    std::thread t{
+        std::bind(threadFunc, m_SharedDataMap)
+    };
+
+    t.detach();
+    int mainThreadIncrement = 0;
+    int finalVal = 0;
+    while(finalVal <= 100000){
+        auto fromMap = m_SharedDataMap->get<int32_t>("target_velocity");
+        if(fromMap){
+            finalVal = fromMap.value();
+        }
+        finalVal += 1;
+    }
+    runThread.store(false);
+
+    EXPECT_EQ(finalVal, 100001);
 
 }
 

@@ -43,9 +43,9 @@ int main(int argc, char** argv)
     }
     auto updateFuncion = [&master](){
 
-        auto optLeftMotor = master->getSlave<Driver*>("left_motor");
-        auto optRightMotor = master->getSlave<Driver*>("right_motor");
-        auto optLifterMotor = master->getSlave<Driver*>("lifter_motor");
+        auto optLeftMotor = master->getSlave<DriverPtr>("left_motor");
+        auto optRightMotor = master->getSlave<DriverPtr>("right_motor");
+        auto optLifterMotor = master->getSlave<DriverPtr>("lifter_motor");
         
         if(optLeftMotor || optRightMotor || optLifterMotor){
             return;
@@ -54,8 +54,7 @@ int main(int argc, char** argv)
         auto leftMotor = optLeftMotor.value();
         auto rightMotor = optRightMotor.value();
         auto lifterMotor = optLifterMotor.value();
-
-
+        
         while(true)
         {
 
@@ -63,11 +62,8 @@ int main(int argc, char** argv)
                 // EtherCAT loop logic:
             // ******************************
 
-            auto leftMotorVel = leftMotor->read<int32_t>("target_velocity");
-
-            if(leftMotorVel){
-                master->setSharedData("left_motor", "target_velocity", leftMotorVel.value());
-            }
+            auto leftMotorVel = leftMotor->read<int32_t>("actual_velocity");
+            
 
             /* auto optTargetVel = master->getSharedData<int32_t>("left_motor", "target_velocity");
             if(optTargetVel){
@@ -75,9 +71,6 @@ int main(int argc, char** argv)
             } */
         }
 
-        delete leftMotor;
-        delete rightMotor;
-        delete lifterMotor;
 
     };
 
